@@ -31,8 +31,8 @@
 #ifndef _QAL_API_H_
  #define _QAL_API_H_
 
- #include <AL/al.h>
- #include <AL/efx.h>
+ #include <AL/al.h> 
+ #include <AL/efx.h> 
  #include "AL/efx-presets.h"
 
 /* Function pointers used to tie

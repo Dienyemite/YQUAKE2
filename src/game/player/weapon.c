@@ -1055,7 +1055,25 @@ Weapon_RocketLauncher_Fire(edict_t *ent)
 
 	VectorSet(offset, 8, 8, ent->viewheight - 8);
 	P_ProjectSource(ent, offset, forward, right, start);
+
 	fire_rocket(ent, start, forward, damage, 650, damage_radius, radius_damage);
+	/*fire two other rockets alongside the first one*/
+	/*left rocket*/
+	{
+		vec3_t angle_spread, forward_spread;
+		Vector3Copy(ent->client->v_angle, angle_spread);
+		angle_spread[YAW] -= 10;
+		AngleVectors(angle_spread, forward_spread, NULL, NULL);
+		fire_rocket(ent, start, forward_spread, damage, 650, damage_radius, radius_damage);
+	}
+	/*right rocket*/
+	{
+		vec3_t angle_spread, forward_spread;
+		Vector3Copy(ent->client->v_angle, angle_spread);
+		angle_spread[YAW] += 10;
+		AngleVectors(angle_spread, forward_spread, NULL, NULL);
+		fire_rocket(ent, start, forward_spread, damage, 650, damage_radius, radius_damage);
+	}
 
 	/* send muzzle flash */
 	gi.WriteByte(svc_muzzleflash);
@@ -1113,12 +1131,13 @@ Blaster_Fire(edict_t *ent, vec3_t g_offset, int damage,
 	VectorScale(forward, -2, ent->client->kick_origin);
 	ent->client->kick_angles[0] = -1;
 
-	fire_blaster(ent, start, forward, damage, 1000, effect, hyper);
+	fire_rocket(ent, start, forward, damage, 650, 120, 120);
 
 	/* send muzzle flash */
 	gi.WriteByte(svc_muzzleflash);
 	gi.WriteShort(ent - g_edicts);
 
+	/*
 	if (hyper)
 	{
 		gi.WriteByte(MZ_HYPERBLASTER | is_silenced);
@@ -1127,6 +1146,8 @@ Blaster_Fire(edict_t *ent, vec3_t g_offset, int damage,
 	{
 		gi.WriteByte(MZ_BLASTER | is_silenced);
 	}
+	*/
+	gi.WriteByte(MZ_ROCKET | is_silenced);
 
 	gi.multicast(ent->s.origin, MULTICAST_PVS);
 
@@ -1293,7 +1314,7 @@ Machinegun_Fire(edict_t *ent)
 	vec3_t start;
 	vec3_t forward, right;
 	vec3_t angles;
-	int damage = 8;
+	int damage = 24;
 	int kick = 2;
 	vec3_t offset;
 
@@ -1349,6 +1370,7 @@ Machinegun_Fire(edict_t *ent)
 	ent->client->kick_angles[0] = ent->client->machinegun_shots * -1.5;
 
 	/* raise the gun as it is firing */
+	/*
 	if (!(deathmatch->value || g_machinegun_norecoil->value))
 	{
 		ent->client->machinegun_shots++;
@@ -1358,14 +1380,17 @@ Machinegun_Fire(edict_t *ent)
 			ent->client->machinegun_shots = 9;
 		}
 	}
+	*/
+
+	ent->client->machinegun_shots = 0;
 	
 	/* get start / end positions */
 	VectorAdd(ent->client->v_angle, ent->client->kick_angles, angles);
 	AngleVectors(angles, forward, right, NULL);
 	VectorSet(offset, 0, 8, ent->viewheight - 8);
 	P_ProjectSource(ent, offset, forward, right, start);
-	fire_bullet(ent, start, forward, damage, kick, DEFAULT_BULLET_HSPREAD,
-			DEFAULT_BULLET_VSPREAD, MOD_MACHINEGUN);
+	fire_bullet(ent, start, forward, damage, kick, DEFAULT_BULLET_HSPREAD / 2,
+			DEFAULT_BULLET_VSPREAD / 2, MOD_MACHINEGUN);
 
 	gi.WriteByte(svc_muzzleflash);
 	gi.WriteShort(ent - g_edicts);
@@ -1585,8 +1610,8 @@ weapon_shotgun_fire(edict_t *ent)
 	vec3_t start;
 	vec3_t forward, right;
 	vec3_t offset;
-	int damage = 4;
-	int kick = 8;
+	int damage = 12;
+	int kick = 16;
 
 	if (!ent)
 	{
@@ -1616,13 +1641,13 @@ weapon_shotgun_fire(edict_t *ent)
 	if (deathmatch->value)
 	{
 		fire_shotgun(ent, start, forward, damage, kick,
-				500, 500, DEFAULT_DEATHMATCH_SHOTGUN_COUNT,
+				200, 200, DEFAULT_DEATHMATCH_SHOTGUN_COUNT,
 				MOD_SHOTGUN);
 	}
 	else
 	{
 		fire_shotgun(ent, start, forward, damage, kick,
-				500, 500, DEFAULT_SHOTGUN_COUNT,
+				200, 200, DEFAULT_SHOTGUN_COUNT,
 				MOD_SHOTGUN);
 	}
 
@@ -1663,8 +1688,8 @@ weapon_supershotgun_fire(edict_t *ent)
 	vec3_t forward, right;
 	vec3_t offset;
 	vec3_t v;
-	int damage = 6;
-	int kick = 12;
+	int damage = 18;
+	int kick = 24;
 
 	if (!ent)
 	{
@@ -1702,8 +1727,8 @@ weapon_supershotgun_fire(edict_t *ent)
 	}	
 	
 	fire_shotgun(ent, start, forward, damage, kick,
-			DEFAULT_SHOTGUN_HSPREAD, DEFAULT_SHOTGUN_VSPREAD,
-			DEFAULT_SSHOTGUN_COUNT / 2, MOD_SSHOTGUN);
+			2000, 1400,
+			24, MOD_SSHOTGUN);
 	
 	v[YAW] = ent->client->v_angle[YAW] + 5;
 	AngleVectors(v, forward, NULL, NULL);
@@ -1720,8 +1745,8 @@ weapon_supershotgun_fire(edict_t *ent)
 	}	
 	
 	fire_shotgun(ent, start, forward, damage, kick,
-			DEFAULT_SHOTGUN_HSPREAD, DEFAULT_SHOTGUN_VSPREAD,
-			DEFAULT_SSHOTGUN_COUNT / 2, MOD_SSHOTGUN);
+			2000, 1400,
+			24, MOD_SSHOTGUN);
 
 	/* send muzzle flash */
 	gi.WriteByte(svc_muzzleflash);
