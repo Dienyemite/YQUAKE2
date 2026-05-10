@@ -1061,7 +1061,7 @@ Weapon_RocketLauncher_Fire(edict_t *ent)
 	/*left rocket*/
 	{
 		vec3_t angle_spread, forward_spread;
-		Vector3Copy(ent->client->v_angle, angle_spread);
+		VectorCopy(ent->client->v_angle, angle_spread);
 		angle_spread[YAW] -= 10;
 		AngleVectors(angle_spread, forward_spread, NULL, NULL);
 		fire_rocket(ent, start, forward_spread, damage, 650, damage_radius, radius_damage);
@@ -1069,7 +1069,7 @@ Weapon_RocketLauncher_Fire(edict_t *ent)
 	/*right rocket*/
 	{
 		vec3_t angle_spread, forward_spread;
-		Vector3Copy(ent->client->v_angle, angle_spread);
+		VectorCopy(ent->client->v_angle, angle_spread);
 		angle_spread[YAW] += 10;
 		AngleVectors(angle_spread, forward_spread, NULL, NULL);
 		fire_rocket(ent, start, forward_spread, damage, 650, damage_radius, radius_damage);
