@@ -979,6 +979,8 @@ struct gclient_s
 
 	edict_t *chase_target; /* player we are chasing */
 	qboolean update_chase; /* need to update chase info? */
+
+	float boost_duration; /* for how long the boost lasts, can't fire off until level.time > boost_duration */
 };
 
 struct edict_s

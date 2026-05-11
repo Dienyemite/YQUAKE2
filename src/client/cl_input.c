@@ -724,6 +724,11 @@ CL_FinalizeCmd(void)
 	cmd->impulse = in_impulse;
 	in_impulse = 0;
 
+	if (in_speed.state & 1)
+	{
+		cmd->buttons |= BUTTON_SHIFT;
+	}
+
 	// Set light level for muzzle flash
 	cmd->lightlevel = (byte)cl_lightlevel->value;
 }

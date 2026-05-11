@@ -2224,6 +2224,34 @@ ClientThink(edict_t *ent, usercmd_t *ucmd)
 			VectorCopy(pm.viewangles, client->ps.viewangles);
 		}
 
+		/* Armored Core movement mechanics like Quick Boost and Assault applied here */
+		if (!ent->deadflag)
+		{
+			qboolean shift_start = (ucmd->buttons & BUTTON_SHIFT) != 0;
+			qboolean shift_end = (client->buttons & BUTTON_SHIFT) != 0;
+			qboolean shift_pressed = shift_start && !shift_end;
+
+			vec3_t forward, right, up;
+			AngleVectors(client->v_angle, forward, right, up);
+
+			/* convert to horizontal position to not let vertical position aiming interfere with the boost */
+			forward[2] = 0;
+			right[2] = 0;
+			VectorNormalize(forward);
+			VectorNormalize(right);
+
+			/* Quick Boost implementation, press shift and hold A or D to boost left or right respectively */
+			if (shift_pressed && ucmd->sidemove != 0 && ucmd->forwardmove == 0 && level.time >= client->boost_duration)
+			{
+				float direction = (ucmd->sidemove > 0) ? 1.0f : -1.0f; /* range of values for the boost direction */
+				ent->velocity[0] = right[0] * direction * 2100; /* boost speed value */
+				ent->velocity[1] = right[1] * direction * 2100;
+				ent->velocity[2] += 100; /* slight upward boost for a dynamic dash movement */
+				client->boost_duration = level.time + 0.5f; /* boost duration cooldown */
+			}
+
+		}
+
 		gi.linkentity(ent);
 
 		if (ent->movetype != MOVETYPE_NOCLIP)
