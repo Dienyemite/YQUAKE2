@@ -2225,6 +2225,7 @@ ClientThink(edict_t *ent, usercmd_t *ucmd)
 		}
 
 		/* Armored Core movement mechanics like Quick Boost and Assault applied here */
+
 		if (!ent->deadflag)
 		{
 			qboolean shift_start = (ucmd->buttons & BUTTON_SHIFT) != 0;
@@ -2241,6 +2242,7 @@ ClientThink(edict_t *ent, usercmd_t *ucmd)
 			VectorNormalize(right);
 
 			/* Quick Boost implementation, press shift and hold A or D to boost left or right respectively */
+
 			if (shift_pressed && ucmd->sidemove != 0 && ucmd->forwardmove == 0 && level.time >= client->boost_duration)
 			{
 				float direction = (ucmd->sidemove > 0) ? 1.0f : -1.0f; /* range of values for the boost direction */
@@ -2248,6 +2250,35 @@ ClientThink(edict_t *ent, usercmd_t *ucmd)
 				ent->velocity[1] = right[1] * direction * 2100;
 				ent->velocity[2] += 100; /* slight upward boost for a dynamic dash movement */
 				client->boost_duration = level.time + 0.5f; /* boost duration cooldown */
+			}
+
+			/* Quick Turn implementation, press shift and hold S to turn 180 degrees */
+
+			else if (shift_pressed && ucmd->forwardmove < 0 && ucmd->sidemove == 0 && level.time >= client->boost_duration)
+			{
+				client->ps.pmove.delta_angles[YAW] += ANGLE2SHORT(180); /* player does a 180 degree turn */
+				client->boost_duration = level.time + 0.4f;
+			}
+
+			/*  Assault Boost implementation, hold shift with W for prolonged boost forward */
+
+			if (shift_start && ucmd->forwardmove > 0 && ucmd->sidemove == 0)
+			{
+				float horizontal_speed = ent->velocity[0] * ent->velocity[0] + ent->velocity[1] * ent->velocity[1];
+
+				if (horizontal_speed < 1000 * 1000) /* boost limiter */
+				{
+					ent->velocity[0] += forward[0] * 500; /* acceleration */
+					ent->velocity[1] += forward[1] * 500;
+				}
+				
+			}
+
+			/* Vertical Flight implementation, hold shift while holding space */
+
+			if (shift_start && ucmd->upmove > 0)
+			{
+				ent->velocity[2] += 500; /* acceleration vertically */
 			}
 
 		}
