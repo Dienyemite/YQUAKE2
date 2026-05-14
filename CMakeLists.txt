@@ -789,13 +789,13 @@ set_target_properties(game PROPERTIES
 get_property(isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if(isMultiConfig) # multi-config, like Visual Studio solution
 	set_target_properties(game PROPERTIES
-		LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/release/$<CONFIG>/baseq2
-		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/release/$<CONFIG>/baseq2
+		LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/release/baseq2/$<CONFIG>/acmod
+		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/release/baseq2/$<CONFIG>/acmod
 		)
 else() # single-config, like normal Makefiles
 	set_target_properties(game PROPERTIES
-		LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/release/baseq2
-		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/release/baseq2
+		LIBRARY_OUTPUT_DIRECTORY /Users/sadmanmazumder/Desktop/ACMod/acmod
+		RUNTIME_OUTPUT_DIRECTORY /Users/sadmanmazumder/Desktop/ACMod/acmod
 		)
 endif()
 target_link_libraries(game ${yquake2LinkerFlags})

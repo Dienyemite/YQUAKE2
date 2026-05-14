@@ -56,6 +56,7 @@ static void M_Menu_Credits_f(void);
 static void M_Menu_Mods_f(void);
 static void M_Menu_Multiplayer_f(void);
 static void M_Menu_Multiplayer_Keys_f(void);
+static void M_Menu_AC_Guide_f(void);
 static void M_Menu_JoinServer_f(void);
 static void M_Menu_AddressBook_f(void);
 static void M_Menu_StartServer_f(void);
@@ -608,7 +609,7 @@ static menuframework_s s_main;
 static menubitmap_s s_plaque;
 static menubitmap_s s_logo;
 static menubitmap_s s_game;
-static menubitmap_s s_multiplayer;
+static menuaction_s s_multiplayer;
 static menubitmap_s s_options;
 static menubitmap_s s_video;
 static menubitmap_s s_quit;
@@ -622,7 +623,7 @@ GameFunc(void *unused)
 static void
 MultiplayerFunc(void *unused)
 {
-	M_Menu_Multiplayer_f();
+	M_Menu_AC_Guide_f();
 }
 
 static void
@@ -709,16 +710,18 @@ InitMainMenu(void)
 	Draw_GetPicSize(&w, &h, ( char * )s_game.generic.name);
 	y += h + 8;
 
-	s_multiplayer.generic.type = MTYPE_BITMAP;
+	s_multiplayer.generic.type = MTYPE_ACTION;
 	s_multiplayer.generic.flags = QMF_LEFT_JUSTIFY | QMF_HIGHLIGHT_IF_FOCUS;
 	s_multiplayer.generic.x = x;
 	s_multiplayer.generic.y = y;
-	s_multiplayer.generic.name = "m_main_multiplayer";
+	s_multiplayer.generic.name = "How to Play Guide: AC Mod";
 	s_multiplayer.generic.callback = MultiplayerFunc;
-	s_multiplayer.focuspic = "m_main_multiplayer_sel";
+
+	y += 8;
+	/* s_multiplayer.focuspic = "m_main_multiplayer_sel"; 
 
 	Draw_GetPicSize(&w, &h, ( char * )s_multiplayer.generic.name);
-	y += h + 8;
+	y += h + 8; */
 
 	s_options.generic.type = MTYPE_BITMAP;
 	s_options.generic.flags = QMF_LEFT_JUSTIFY | QMF_HIGHLIGHT_IF_FOCUS;
@@ -817,8 +820,107 @@ M_Menu_Main_f(void)
 }
 
 /*
+AC Mod Guide Screen Menu and Feature List
+*/
+
+static menuframework_s s_ac_guide_menu;
+
+static const char *ac_guide_menu_list[] = 
+{
+	"AC6 MOD: HOW TO PLAY GUIDE",
+    "",
+    "MOVEMENT: THIRD PERSON POV BY DEFAULT",
+    "SHIFT + W         Assault Boost: Rapid, sustained boost to the front. ",
+    "SHIFT + A / D     Quick Boost: Quick dash to the left or right respectively. ",
+    "SHIFT + S         Quick Turn: Fast 180 degree rotation of the camera. ",
+    "SHIFT + SPACE     Vertical Flight: Instantenous burst of lift vertically. ",
+    "",
+    "COMBAT",
+    "LOADOUT COMMANDS:  Type in Console for each weapon selected from the Inventory. ",
+    "leftarm           Equip weapon to left arm slot",
+    "rightarm          Equip weapon to right arm slot",
+    "leftshldr         Equip weapon to left shoulder slot",
+    "rightshldr        Equip weapon to right shoulder slot",
+    "",
+    "MOD FEATURES",
+    "* AC6 style Movement System",
+    "* 4-slot weapon loadout system:  Arms & Shoulder Weapons ",
+    "* Third-Person Camera",
+    "* Target Lock-on System, projectiles hit the nearest enemy automatically when fired in any direction. ",
+    "* All Q2 weapons changed to match AC's weapon functionality. ",
+    "",
+    "Press ESC to return to the main menu. ",
+	0
+};
+
+static void
+AC_Menu_Card(void)
+{
+	int m;
+	float size = SCR_GetMenuScale();
+	int height = (int)(viddef.height / size * 0.15f);
+
+	for (m = 0; ac_guide_menu_list[m] !=0; m++)
+	{
+		int d;
+		int bolded = 0;
+		int textoffset = 0;
+		int h = height + m * 15;
+
+		if (ac_guide_menu_list[m][0] == '+')
+		{
+			bolded = 1;
+			textoffset = 2;
+		}
+
+		for (d = 0; ac_guide_menu_list[m][d + textoffset]; d++)
+		{
+			int x;
+			int outline = (int)strlen(ac_guide_menu_list[m]) - textoffset;
+
+			x = (int)((viddef.width / size - outline * 9) / 2) + d * 9;
+
+			if (bolded)
+			{
+				Draw_CharScaled((int)(x * size), (int)(h * size),
+                    ac_guide_menu_list[m][d + textoffset] + 128, size);
+            }
+            else
+            {
+                Draw_CharScaled((int)(x * size), (int)(h * size),
+                    ac_guide_menu_list[m][d + textoffset], size);
+            }
+		}
+	}
+}
+
+static const char *
+AC_Menu_Key(int key)
+{
+	key = Key_GetMenuKey(key);
+
+	if (key == K_ESCAPE)
+	{
+		M_PopMenu();
+		return menu_out_sound;
+	}
+
+	return NULL;
+}
+
+static void
+M_Menu_AC_Guide_f(void)
+{
+	memset(&s_ac_guide_menu, 0, sizeof(menuframework_s));
+	s_ac_guide_menu.draw = AC_Menu_Card;
+	s_ac_guide_menu.key = AC_Menu_Key;
+
+	M_PushMenu(&s_ac_guide_menu);
+}
+
+/*
  * MULTIPLAYER MENU
- */
+ 
 
 static menuframework_s s_multiplayer_menu;
 static menuaction_s s_join_network_server_action;
@@ -910,15 +1012,17 @@ Multiplayer_MenuKey(int key)
 {
 	return Default_MenuKey(&s_multiplayer_menu, key);
 }
-
+*/
 static void
 M_Menu_Multiplayer_f(void)
 {
-	Multiplayer_MenuInit();
+	
+	M_Menu_AC_Guide_f();
+	/*Multiplayer_MenuInit();
 	s_multiplayer_menu.draw = Multiplayer_MenuDraw;
 	s_multiplayer_menu.key  = Multiplayer_MenuKey;
 
-	M_PushMenu(&s_multiplayer_menu);
+	M_PushMenu(&s_multiplayer_menu);*/
 }
 
 /*
@@ -6896,11 +7000,11 @@ M_Menu_PlayerConfig_f(void)
 {
 	if (!PlayerConfig_MenuInit())
 	{
-		Menu_SetStatusBar(&s_multiplayer_menu, "no valid player models found");
+		Menu_SetStatusBar(&s_ac_guide_menu, "no valid player models found");
 		return;
 	}
 
-	Menu_SetStatusBar(&s_multiplayer_menu, NULL);
+	Menu_SetStatusBar(&s_ac_guide_menu, NULL);
 	s_player_config_menu.draw = PlayerConfig_MenuDraw;
 	s_player_config_menu.key  = PlayerConfig_MenuKey;
 
