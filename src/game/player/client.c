@@ -2258,6 +2258,8 @@ ClientThink(edict_t *ent, usercmd_t *ucmd)
 			else if (shift_pressed && ucmd->forwardmove < 0 && ucmd->sidemove == 0 && level.time >= client->boost_duration)
 			{
 				client->ps.pmove.delta_angles[YAW] += ANGLE2SHORT(180); /* player does a 180 degree turn */
+				client->v_angle[YAW] += 180;
+				client->ps.viewangles[YAW] = client->v_angle[YAW];
 				client->boost_duration = level.time + 0.4f;
 			}
 

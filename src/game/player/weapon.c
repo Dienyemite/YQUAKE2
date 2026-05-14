@@ -1007,6 +1007,8 @@ weapon_grenadelauncher_fire(edict_t *ent)
 	AngleVectors(ent->client->v_angle, forward, right, NULL);
 	P_ProjectSource(ent, offset, forward, right, start);
 
+	PlayerLockOn(ent, start, forward);
+
 	VectorScale(forward, -2, ent->client->kick_origin);
 	ent->client->kick_angles[0] = -1;
 
@@ -1076,6 +1078,8 @@ Weapon_RocketLauncher_Fire(edict_t *ent)
 	VectorSet(offset, 8, 8, ent->viewheight - 8);
 	P_ProjectSource(ent, offset, forward, right, start);
 
+	PlayerLockOn(ent, start, forward);
+
 	fire_rocket(ent, start, forward, damage, 650, damage_radius, radius_damage);
 	/*fire two other rockets alongside the first one*/
 	/*left rocket*/
@@ -1084,6 +1088,7 @@ Weapon_RocketLauncher_Fire(edict_t *ent)
 		VectorCopy(ent->client->v_angle, angle_spread);
 		angle_spread[YAW] -= 10;
 		AngleVectors(angle_spread, forward_spread, NULL, NULL);
+		PlayerLockOn(ent, start, forward_spread);
 		fire_rocket(ent, start, forward_spread, damage, 650, damage_radius, radius_damage);
 	}
 	/*right rocket*/
@@ -1092,6 +1097,7 @@ Weapon_RocketLauncher_Fire(edict_t *ent)
 		VectorCopy(ent->client->v_angle, angle_spread);
 		angle_spread[YAW] += 10;
 		AngleVectors(angle_spread, forward_spread, NULL, NULL);
+		PlayerLockOn(ent, start, forward_spread);
 		fire_rocket(ent, start, forward_spread, damage, 650, damage_radius, radius_damage);
 	}
 
@@ -1279,6 +1285,8 @@ Weapon_HyperBlaster_Fire(edict_t *ent)
 				VectorAdd(hyperblaster_offset, offset, hyperblaster_offset);
 				P_ProjectSource(ent, hyperblaster_offset, hyperblaster_fwd, hyperblaster_right, hyperblaster_begin);
 
+				PlayerLockOn(ent, hyperblaster_begin, hyperblaster_fwd);
+
 				VectorScale(hyperblaster_fwd, -4, ent->client->kick_origin);
 				ent->client->kick_angles[0] = -2;
 				fire_rail(ent, hyperblaster_begin, hyperblaster_fwd, 50, 0);
@@ -1429,6 +1437,8 @@ Machinegun_Fire(edict_t *ent)
 	AngleVectors(angles, forward, right, NULL);
 	VectorSet(offset, 0, 8, ent->viewheight - 8);
 	P_ProjectSource(ent, offset, forward, right, start);
+
+	PlayerLockOn(ent, start, forward);
 	fire_bullet(ent, start, forward, damage, kick, DEFAULT_BULLET_HSPREAD / 2,
 			DEFAULT_BULLET_VSPREAD / 2, MOD_MACHINEGUN);
 
@@ -1768,6 +1778,7 @@ weapon_supershotgun_fire(edict_t *ent)
 		P_ProjectSource(ent, offset, forward, right, start);
 	}	
 	
+	PlayerLockOn(ent, start, forward);
 	fire_shotgun(ent, start, forward, damage, kick,
 			2000, 1400,
 			24, MOD_SSHOTGUN);
@@ -1786,6 +1797,7 @@ weapon_supershotgun_fire(edict_t *ent)
 		P_ProjectSource(ent, offset, forward, right, start);
 	}	
 	
+	PlayerLockOn(ent, start, forward);
 	fire_shotgun(ent, start, forward, damage, kick,
 			2000, 1400,
 			24, MOD_SSHOTGUN);
@@ -1869,6 +1881,9 @@ weapon_railgun_fire(edict_t *ent)
 
 	VectorSet(offset, 0, 7, ent->viewheight - 8);
 	P_ProjectSource(ent, offset, forward, right, start);
+
+	PlayerLockOn(ent, start, forward);
+
 	fire_rail(ent, start, forward, damage, kick);
 
 	/* send muzzle flash */
@@ -1958,6 +1973,8 @@ weapon_bfg_fire(edict_t *ent)
 			VectorCopy(ent->client->v_angle, songbird_angles);
 			songbird_angles[YAW] += yaw_off[s];
 			AngleVectors(songbird_angles, songbird_fwd, NULL, NULL);
+
+			PlayerLockOn(ent, start, songbird_fwd);
 
 			fire_rocket(ent, start, songbird_fwd, damage / 3, 800, 300, 240);
 		}
