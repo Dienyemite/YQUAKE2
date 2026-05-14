@@ -48,6 +48,7 @@ cvar_t *crosshair_3d_glow_g;
 cvar_t *crosshair_3d_glow_b;
 
 cvar_t *cl_stats;
+cvar_t *cl_thirdpersonpov;
 
 static int r_numdlights;
 static dlight_t r_dlights[MAX_DLIGHTS];
@@ -654,5 +655,6 @@ V_Init(void)
 	cl_testlights = Cvar_Get("cl_testlights", "0", 0);
 
 	cl_stats = Cvar_Get("cl_stats", "0", 0);
+	cl_thirdpersonpov = Cvar_Get("cl_thirdpersonpov", "0", CVAR_ARCHIVE);
 }
 

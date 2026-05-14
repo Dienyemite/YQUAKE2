@@ -43,6 +43,7 @@ static qboolean is_quad;
 static byte is_silenced;
 
 void weapon_grenade_fire(edict_t *ent, qboolean held);
+void WeaponLoadout(edict_t *ent, gitem_t *weaponslots);
 
 void
 P_ProjectSource(edict_t *ent, vec3_t distance,
@@ -84,6 +85,22 @@ P_ProjectSource(edict_t *ent, vec3_t distance,
 			VectorNormalize(forward);
 		}
 	}
+}
+
+static void
+PlayerLockOn(edict_t *ent, vec3_t begin, vec3_t toward)
+{
+	edict_t *gettarget = ent->client->target_lock_on;
+	vec3_t direction;
+
+	if (!gettarget || !gettarget->inuse || gettarget->health <= 0)
+	{
+		return;
+	}
+
+	VectorSubtract(gettarget->s.origin, begin, direction);
+	VectorNormalize(direction);
+	VectorCopy(direction, toward);
 }
 
 /*
@@ -1131,6 +1148,8 @@ Blaster_Fire(edict_t *ent, vec3_t g_offset, int damage,
 	VectorAdd(offset, g_offset, offset);
 	P_ProjectSource(ent, offset, forward, right, start);
 
+	PlayerLockOn(ent, start, forward);
+
 	VectorScale(forward, -2, ent->client->kick_origin);
 	ent->client->kick_angles[0] = -1;
 
@@ -1653,6 +1672,7 @@ weapon_shotgun_fire(edict_t *ent)
 
 	VectorSet(offset, 0, 8, ent->viewheight - 8);
 	P_ProjectSource(ent, offset, forward, right, start);
+	PlayerLockOn(ent, start, forward);
 
 	if (is_quad)
 	{
@@ -2016,4 +2036,85 @@ Weapon_BFG(edict_t *ent)
 
 	Weapon_Generic(ent, 8, 32, 55, 58, pause_frames,
 			fire_frames, weapon_bfg_fire);
+}
+
+void
+WeaponLoadout(edict_t *ent, gitem_t *weaponslot)
+{
+    vec3_t forward, right, start, offset;
+    int ammo_count;
+
+    if (!weaponslot || weaponslot->weapmodel < 1 || weaponslot->weapmodel > 11)
+    {
+        return;
+    }
+
+    /* checks for the ammo */
+    if (weaponslot->ammo)
+    {
+        gitem_t *ammo_item = FindItem(weaponslot->ammo);
+        ammo_count = ITEM_INDEX(ammo_item);
+
+        if (!ent->client->pers.inventory[ammo_count])
+        {
+            return;
+        }
+    }
+
+    AngleVectors(ent->client->v_angle, forward, right, NULL);
+    VectorSet(offset, 8, 8, ent->viewheight - 8);
+
+    P_ProjectSource(ent, offset, forward, right, start);
+    PlayerLockOn(ent, start, forward);
+
+    switch (weaponslot->weapmodel)
+    {
+        case WEAP_BLASTER:
+        case WEAP_HYPERBLASTER:
+            fire_rocket(ent, start, forward, 60, 680, 140, 120);
+            break;
+        case WEAP_SHOTGUN:
+            fire_shotgun(ent, start, forward, 12, 16,
+                    DEFAULT_BULLET_HSPREAD, DEFAULT_BULLET_VSPREAD, 12, MOD_SHOTGUN);
+            break;
+        case WEAP_SUPERSHOTGUN:
+            fire_shotgun(ent, start, forward, 24, 24, 2000, 1400, 24, MOD_SSHOTGUN);
+            break;
+        case WEAP_MACHINEGUN:
+            fire_bullet(ent, start, forward, 24, 2,
+                    DEFAULT_BULLET_HSPREAD / 2, DEFAULT_BULLET_VSPREAD / 2, MOD_MACHINEGUN);
+            break;
+        case WEAP_CHAINGUN:
+            fire_bullet(ent, start, forward, 10, 2,
+                    DEFAULT_BULLET_HSPREAD, DEFAULT_BULLET_VSPREAD, MOD_CHAINGUN);
+            break;
+        case WEAP_GRENADES:
+        case WEAP_GRENADELAUNCHER:
+            fire_rocket(ent, start, forward, 300, 800, 300, 200);
+            break;
+        case WEAP_ROCKETLAUNCHER:
+            fire_rocket(ent, start, forward, 200, 700, 120, 120);
+            break;
+        case WEAP_RAILGUN:
+            fire_rail(ent, start, forward, 100, 20);
+            break;
+        case WEAP_BFG:
+            fire_rocket(ent, start, forward, 300, 1000, 1000, 500);
+            break;
+        default:
+            return;
+    }
+
+    /* uses up the ammo */
+    if (weaponslot->ammo)
+    {
+        ammo_count = ITEM_INDEX(FindItem(weaponslot->ammo));
+		
+        if (!((int)dmflags->value & DF_INFINITE_AMMO))
+        {
+            ent->client->pers.inventory[ammo_count]--;
+        }
+    }
+
+    PlayerNoise(ent, start, PNOISE_WEAPON);
 }

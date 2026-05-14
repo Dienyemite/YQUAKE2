@@ -30,6 +30,7 @@
 void ClientUserinfoChanged(edict_t *ent, char *userinfo);
 void SP_misc_teleporter_dest(edict_t *ent);
 void Touch_Item(edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *surf);
+void WeaponLoadout(edict_t *ent, gitem_t *weaponslots);
 
 /*
  * The ugly as hell coop spawnpoint fixup function.
@@ -2281,9 +2282,55 @@ ClientThink(edict_t *ent, usercmd_t *ucmd)
 				ent->velocity[2] += 500; /* acceleration vertically */
 			}
 
-		}
+			/* target lock-on implementation */
+			{
+				edict_t *enemy;
+				edict_t *nearest_target = NULL;
 
-		gi.linkentity(ent);
+				float nearest_distance = 2000; /* the range of the target lock-on */
+
+				for (enemy = g_edicts + 1 + game.maxclients; enemy < &g_edicts[globals.num_edicts]; enemy++)
+				{
+					vec3_t direction;
+					trace_t trace;
+
+					float distance;
+
+					if (!enemy->inuse || !enemy->health || enemy->health <= 0)
+					{
+						continue;
+					}
+
+					if (!(enemy->svflags & SVF_MONSTER))
+					{
+						continue;
+					}
+
+					VectorSubtract(enemy->s.origin, ent->s.origin, direction);
+					distance = VectorLength(direction);
+
+					if (distance > nearest_distance)
+					{
+						continue;
+					}
+
+					trace = gi.trace(ent->s.origin, NULL, NULL, enemy->s.origin, ent, MASK_SOLID);
+
+					if (trace.fraction < 1.0f) /* target lock-on occuring at a certain visibility of the enemy */
+					{
+						continue;
+					}
+
+					nearest_target = enemy;
+					nearest_distance = distance;
+
+				}
+
+				client->target_lock_on = nearest_target;
+			}
+
+			gi.linkentity(ent);
+		}
 
 		if (ent->movetype != MOVETYPE_NOCLIP)
 		{
@@ -2346,6 +2393,15 @@ ClientThink(edict_t *ent, usercmd_t *ucmd)
 		{
 			client->weapon_thunk = true;
 			Think_Weapon(ent);
+
+			/* fires 4 weapons at once when the player shoots */
+			for (i = 0; i < 4; i++)
+			{
+				if (client->weapon_loadout[i])
+				{
+					WeaponLoadout(ent, client->weapon_loadout[i]);
+				}
+			}
 		}
 	}
 

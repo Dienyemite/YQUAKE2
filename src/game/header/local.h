@@ -978,9 +978,12 @@ struct gclient_s
 	float respawn_time; /* can respawn when time > this */
 
 	edict_t *chase_target; /* player we are chasing */
+	edict_t *target_lock_on; /* locks onto the nearest target*/
 	qboolean update_chase; /* need to update chase info? */
 
 	float boost_duration; /* for how long the boost lasts, can't fire off until level.time > boost_duration */
+	
+	gitem_t *weapon_loadout[4]; /* 4 weapon slots */
 };
 
 struct edict_s

@@ -266,7 +266,11 @@ CL_AddPacketEntities(frame_t *frame)
 
 		if (s1->number == cl.playernum + 1)
 		{
-			ent.flags |= RF_VIEWERMODEL;
+
+			if (!cl_thirdpersonpov->value)
+			{
+				ent.flags |= RF_VIEWERMODEL;
+			}
 
 			if (effects & EF_FLAG1)
 			{
@@ -288,7 +292,11 @@ CL_AddPacketEntities(frame_t *frame)
 				V_AddLight(ent.origin, 225, -1.0f, -1.0f, -1.0f);
 			}
 
-			continue;
+			if (!cl_thirdpersonpov->value)
+			{
+				continue;
+			}
+
 		}
 
 		/* if set to invisible, skip */
@@ -613,6 +621,12 @@ CL_AddViewWeapon(player_state_t *ps, player_state_t *ops)
 		return;
 	}
 
+	/* disable gun view in third person pov */
+	if (cl_thirdpersonpov->value)
+	{
+		return;
+	}
+
 	/* don't draw gun if in wide angle view and drawing not forced */
 	if (ps->fov > 90)
 	{
@@ -796,6 +810,22 @@ CL_CalcViewValues(void)
 	}
 
 	AngleVectors(cl.refdef.viewangles, cl.v_forward, cl.v_right, cl.v_up);
+
+	/* third person pov camera */
+	
+	if (cl_thirdpersonpov->value)
+	{
+		vec3_t thirdpersoncamerabegin;
+		vec3_t thirdpersoncameraend;
+		trace_t trace;
+
+		VectorCopy(cl.refdef.vieworg, thirdpersoncamerabegin);
+		VectorMA(thirdpersoncamerabegin, -250, cl.v_forward, thirdpersoncameraend);
+		thirdpersoncameraend[2] += 50;
+
+		trace = CL_PMTrace(thirdpersoncamerabegin, vec3_origin, vec3_origin, thirdpersoncameraend);
+		VectorCopy(trace.endpos, cl.refdef.vieworg);
+	}
 
 	/* interpolate field of view */
 	ifov = ops->fov + lerp * (ps->fov - ops->fov);

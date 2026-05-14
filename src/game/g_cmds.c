@@ -2023,8 +2023,35 @@ ClientCommand(edict_t *ent)
 	{
 		Cmd_PrefWeap_f(ent);
 	}
-	else /* anything that doesn't match a command will be a chat */
+
+	static const char *slots[] = 
+	{
+		"LEFT ARM", "RIGHT ARM", "LEFT SHLDR", "RIGHT SHLDR"
+	};
+
+	static const char *slot_options[] = 
+	{ 
+		"leftarm", "rightarm", "leftshldr", "rightshldr" 
+	};
+	int slot;
+
+	for (slot = 0; slot < 4; slot++)
+	{
+		if (Q_stricmp(cmd, slot_options[slot]) == 0)
+		{
+			ent->client->weapon_loadout[slot] = ent->client->pers.weapon;
+			gi.cprintf(ent, PRINT_HIGH, "%s: %s\n", slots[slot], ent->client->pers.weapon ? ent->client->pers.weapon->pickup_name : "Nonexistent.");
+
+			return;
+		}
+	}
+
+	Cmd_Say_f(ent, false, true);
+
+	/*else */ /* anything that doesn't match a command will be a chat */
+	/*
 	{
 		Cmd_Say_f(ent, false, true);
 	}
+	*/
 }
